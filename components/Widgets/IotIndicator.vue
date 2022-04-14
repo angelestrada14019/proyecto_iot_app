@@ -1,5 +1,5 @@
 <template>
-<div :class="[config.column]">
+<div>
   <card >
     <div slot="header">
       <h4 class="card-title">{{config.selectedDevice.name}}-{{config.variableFullName}}</h4>

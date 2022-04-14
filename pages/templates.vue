@@ -545,12 +545,12 @@
 
     <!-- DASHBOARD PREVIEW -->
     <div class="row">
-        <div v-for="(widget, index) of widgets" :class="[widget.column]" :key="index">
+        <div v-for="(widget, index) in widgets" :class="[widget.column]" :key="index">
         <i
           aria-hidden="true"
           class="fa fa-trash text-warning pull-right"
           @click="deleteWidget(index)"
-          style="margin-bottom: 10px;"
+          style="margin-bottom: 10px; cursor: pointer;"
         ></i>
 
         <Rtnumberchart
@@ -700,7 +700,6 @@ export default {
   },
   data() {
     return {
-      value: false,
       widgets: [],
       templates: [],
       widgetType: "",
@@ -767,11 +766,43 @@ export default {
     };
   },
   methods: {
+    addNewWidget(){
+      if(this.widgetType == "numberchart"){
+        this.ncConfig.variable= this.makeid(10);
+        this.widgets.push(JSON.parse(JSON.stringify(this.ncConfig)));
+      }
+      if(this.widgetType == "switch"){
+        this.iotSwitchConfig.variable= this.makeid(10);
+        this.widgets.push(JSON.parse(JSON.stringify(this.iotSwitchConfig)));
+      }
+      if(this.widgetType == "button"){
+        this.iotButtonConfig.variable= this.makeid(10);
+        this.widgets.push(JSON.parse(JSON.stringify(this.iotButtonConfig)));
+      }
+      if(this.widgetType == "indicator"){
+        this.iotIndicatorConfig.variable= this.makeid(10);
+        this.widgets.push(JSON.parse(JSON.stringify(this.iotIndicatorConfig)));
+      }
+
+    },
+    deleteWidget(index){
+      this.widgets.splice(index, 1);
+    },
     saveTemplate(){
     },
-    addNewWidget(){
-      
+    makeid(length) {
+      var result = "";
+      var characters =
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+      var charactersLength = characters.length;
+      for (var i = 0; i < length; i++) {
+        result += characters.charAt(
+          Math.floor(Math.random() * charactersLength)
+        );
+      }
+      return result;
     }
+
   },
 };
 </script>
