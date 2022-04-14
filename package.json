@@ -5,9 +5,9 @@
   "scripts": {
     "dev": "nuxt",
     "devn": "nodemon api/index.js --exec babel-node",
-    "build": "nuxt build",
-    "start": "nuxt start",
-    "generate": "nuxt generate"
+    "build": "nuxt", 
+    "start": "nuxt",
+    "generate": "nuxt"
   },
   "engines": {
     "node": "16.13.2",
