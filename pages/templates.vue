@@ -767,13 +767,11 @@ export default {
     };
   },
   methods: {
-    sendData1() {
-      this.value = !this.value;
-      const toSend = {
-        value: this.value,
-      };
-      this.$nuxt.$emit("userid/8888/var1/sdata", toSend);
+    saveTemplate(){
     },
+    addNewWidget(){
+      
+    }
   },
 };
 </script>
