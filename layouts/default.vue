@@ -49,7 +49,7 @@
         :class="{ content: !isFullScreenRoute }"
         @click="toggleSidebar"
       >
-        <zoom-center-transition :duration="1000" mode="out-in">
+        <zoom-center-transition :duration="500" mode="out-in">
           <!-- your content here -->
           <nuxt></nuxt>
         </zoom-center-transition>
@@ -94,7 +94,7 @@
     },
     data() {
       return {
-        sidebarBackground: 'green' //vue|blue|orange|green|red|primary
+        sidebarBackground: 'primary' //vue|blue|orange|green|red|primary
       };
     },
     computed: {

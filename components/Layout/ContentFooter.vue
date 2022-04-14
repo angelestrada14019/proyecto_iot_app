@@ -40,7 +40,5 @@ export default {
 };
 </script>
 <style>
-span{
-  color: #ba54f5;
-}
+
 </style>

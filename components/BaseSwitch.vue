@@ -4,11 +4,11 @@
     :class="switchClass"
   >
     <div class="bootstrap-switch-container" @click="triggerToggle()">
-      <span class="bootstrap-switch-handle-on ">
+      <span class="bootstrap-switch-handle-on btn-primary">
         <slot name="on"> {{ onText }} </slot>
       </span>
       <span class="bootstrap-switch-label"></span>
-      <span class="bootstrap-switch-handle-off bootstrap-switch-default">
+      <span class="bootstrap-switch-handle-off bootstrap-switch-default btn-default">
         <slot name="off"> {{ offText }} </slot>
       </span>
     </div>
@@ -41,8 +41,11 @@ export default {
   methods: {
     triggerToggle() {
       this.model = !this.model;
+      this.$emit('click');
     }
   }
 };
 </script>
-<style></style>
+<style>
+
+</style>
