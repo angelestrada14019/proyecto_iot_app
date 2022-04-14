@@ -7,7 +7,8 @@
     "devn": "nodemon api/index.js --exec babel-node",
     "build": "nuxt build",
     "start": "nuxt start",
-    "generate": "nuxt generate"
+    "generate": "nuxt generate",
+    "heroku-postbuild": "npm run dev"
   },
   "engines": {
     "node": "16.13.2",
