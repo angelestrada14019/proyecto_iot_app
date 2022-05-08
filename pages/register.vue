@@ -40,7 +40,7 @@
             type="primary"
             class="mb-3"
             size="lg"
-            @click="register"
+            @click="register()"
             block
           >
             Register
@@ -64,6 +64,7 @@
 </template>
 <script>
 export default {
+  middleware: 'notAuthenticated',
   layout: "auth",
   data() {
     return {
@@ -74,7 +75,28 @@ export default {
       }
     };
   },
-  methods: {}
+  methods: {
+    register(){
+      this.$axios.post("/register", this.user).then(response => {
+        this.$notify({
+          type: "success",
+          icon: "tim-icons icon-check-2",
+          message: response.data.message
+        });
+        this.user.name="";
+        this.user.email="";
+        this.user.password="";
+        $nuxt.$router.push("/login");
+
+      }).catch(error => {
+        this.$notify({
+          type: "danger",
+          icon: "tim-icons icon-alert-circle-exc",
+          message: error.response.data.message
+        });
+      });
+    }
+  }
 };
 </script>
 <style>

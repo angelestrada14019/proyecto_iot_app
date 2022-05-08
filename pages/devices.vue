@@ -69,7 +69,7 @@
           <h4 class="card-title">Devices</h4>
         </div>
         <div>
-          <el-table :data="devices">
+          <el-table :data="$store.state.devices">
             <el-table-column label="#" min-width="50">
               <div slot-scope="{ $index }">
                 <p>{{ $index + 1 }}</p>
@@ -83,8 +83,17 @@
             ></el-table-column>
             <el-table-column label="Actions">
               <div slot-scope="{ row, $index }">
-                  <el-tooltip content="Server Status Indicator" style="margin-right:10px">
-                  <i class="fas fa-database" :class="{'text-success' : row.saverRule, 'text-dark' : !row.saverRule}"></i>
+                <el-tooltip
+                  content="Server Status Indicator"
+                  style="margin-right: 10px"
+                >
+                  <i
+                    class="fas fa-database"
+                    :class="{
+                      'text-success': row.saverRule,
+                      'text-dark': !row.saverRule,
+                    }"
+                  ></i>
                 </el-tooltip>
                 <el-tooltip content="Database Save">
                   <base-switch
@@ -118,15 +127,13 @@
       </card>
     </div>
     <!-- End Devices table view -->
-    <Json :value="devices"> </Json>
+    <Json :value="$store.state.devices"> </Json>
   </div>
-
 </template>
 
 <script>
 import { Table, TableColumn } from "element-ui";
 import { Select, Option } from "element-ui";
-
 
 export default {
   components: {
@@ -135,42 +142,48 @@ export default {
     [Select.name]: Select,
     [Option.name]: Option,
   },
+  mounted() {
+    this.$store.dispatch("getDevices");
+  },
   methods: {
     deleteDevice(device) {
-      alert(device.name);
+      const axiosHeader = {
+        headers: {
+          "Content-Type": "application/json",
+          token: this.$store.state.auth.token,
+        },
+        params: {
+          dId: device.dId,
+        },
+      };
+      this.$axios
+        .delete("/device", axiosHeader)
+        .then((response) => {
+          console.log(response.data);
+          if (response.data.status) {
+            this.$notify({
+              type: "success",
+              icon: "tim-icons icon-check-2",
+              message: `Device ${device.name} deleted successfully`,
+            });
+            this.$store.dispatch("getDevices");
+          }
+        })
+        .catch((error) => {
+          console.log(error);
+          this.$notify({
+            type: "danger",
+            icon: "tim-icons icon-simple-remove",
+            message: `Device ${device.name} not deleted`,
+          });
+        });
     },
     updateSaverRuleStatus(index) {
-
       this.devices[index].saverRule = !this.devices[index].saverRule;
-
     },
   },
   data() {
-    return {
-      devices: [
-        {
-          name: "Home",
-          dId: "777",
-          templateName: "Power Sensor",
-          templateId: "123456789",
-          saverRule: false,
-        },
-        {
-          name: "Office",
-          dId: "888",
-          templateName: "Power Sensor",
-          templateId: "123456789",
-          saverRule: true,
-        },
-        {
-          name: "template1",
-          dId: "999",
-          templateName: "Power Sensor",
-          templateId: "123456789",
-          saverRule: false,
-        },
-      ],
-    };
+    return {};
   },
 };
 </script>

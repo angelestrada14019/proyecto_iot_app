@@ -84,6 +84,7 @@
   import { SlideYDownTransition, ZoomCenterTransition } from 'vue2-transitions';
 
   export default {
+    middleware: 'authenticated',
     components: {
       DashboardNavbar,
       ContentFooter,
