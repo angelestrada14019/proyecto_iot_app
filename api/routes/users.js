@@ -29,10 +29,10 @@ router.post("/login", async (req, res) => {
       user.set("password", undefined, { strict: false });
       const token = jwt.sign(
         {
-          userData: user,
+          user: user,
         },
         "secret-ajea14019",
-        { expiresIn: 60*60*24 } // 1 day
+        { expiresIn: 60*60*24*30 } // 1 month
       );
       response.status = true;
       response.message = "Login correcto";
@@ -88,7 +88,7 @@ router.get("/users", async (req, res) => {
     res.json(response);
   } catch (error) {
     response.message = "Error finding users";
-    res.json(response);
+    res.status(400).json(response);
     console.log("error".red, error);
   } finally {
     response.status = false;
