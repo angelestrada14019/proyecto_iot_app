@@ -54,7 +54,7 @@ export default {
   methods: {
     getIconColorClass() {
       //para apagar el icono
-      if (!this.sending) {
+      if (!this.value) {
         return "text-dark";
       } else {
         return "text-" + this.config.class;
@@ -74,7 +74,7 @@ export default {
           value: this.value,
         },
       };
-
+      console.log("sendValue",toSend);
       $nuxt.$emit("mqtt-sender", toSend);
     },
   },

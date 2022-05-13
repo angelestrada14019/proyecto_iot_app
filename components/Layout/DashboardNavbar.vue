@@ -16,37 +16,29 @@
           <span class="navbar-toggler-bar bar3"></span>
         </button>
       </div>
-      <Nuxt-link class="navbar-brand ml-xl-3 ml-5" to="#">{{ routeName }}</Nuxt-link>
+      <Nuxt-link class="navbar-brand ml-xl-3 ml-5" to="#">{{
+        routeName
+      }}</Nuxt-link>
     </div>
 
     <ul class="navbar-nav" :class="$rtl.isRTL ? 'mr-auto' : 'ml-auto'">
-      <div class="search-bar input-group" @click="searchModalVisible = true">
-        <button
-          class="btn btn-link"
-          id="search-button"
-          data-toggle="modal"
-          data-target="#searchModal"
-        >
-          <i class="tim-icons icon-zoom-split"></i>
-        </button>
-        <!-- You can choose types of search input -->
-      </div>
-      <modal
-        :show.sync="searchModalVisible"
-        class="modal-search"
-        id="searchModal"
-        :centered="false"
-        :show-close="true"
+      <!-- select device -->
+      <el-select
+        class="select-success"
+        placeholder="Select Device"
+        @change="selectDevice()"
+        v-model="selectedDevice"
       >
-        <input
-          slot="header"
-          v-model="searchQuery"
-          type="text"
-          class="form-control"
-          id="inlineFormInputGroup"
-          placeholder="SEARCH"
-        />
-      </modal>
+        <el-option
+          v-for="(device, index) in $store.state.devices"
+          :key="device._id"
+          :label="device.name"
+          :value="index"
+          :disabled="!device.saverRule.status"
+
+        ></el-option>
+      </el-select>
+      <!-- alarmas o notificaciones -->
       <base-dropdown
         tag="li"
         :menu-on-right="!$rtl.isRTL"
@@ -54,33 +46,33 @@
         title-classes="nav-link"
         class="nav-item"
       >
-        <template
-          slot="title"
-        >
-          <div class="notification d-none d-lg-block d-xl-block"></div>
+        <template slot="title">
+          <div
+            v-if="this.$store.state.notifications.length > 0"
+            class="notification d-none d-lg-block d-xl-block"
+          ></div>
           <i class="tim-icons icon-sound-wave"></i>
           <p class="d-lg-none">New Notifications</p>
         </template>
-        <li class="nav-link">
+        <li
+          @click="notificationReaded(notification._id)"
+          v-for="(notification, index) in $store.state.notifications"
+          :key="index"
+          class="nav-link"
+        >
           <a href="#" class="nav-item dropdown-item"
-            >Mike John responded to your email</a
-          >
-        </li>
-        <li class="nav-link">
-          <a href="#" class="nav-item dropdown-item">You have 5 more tasks</a>
-        </li>
-        <li class="nav-link">
-          <a href="#" class="nav-item dropdown-item"
-            >Your friend Michael is in town</a
-          >
-        </li>
-        <li class="nav-link">
-          <a href="#" class="nav-item dropdown-item">Another notification</a>
-        </li>
-        <li class="nav-link">
-          <a href="#" class="nav-item dropdown-item">Another one</a>
+            ><b style="color: orangered">{{ unixToDate(notification.time) }}</b>
+            <div>
+              <b>Device: </b>{{ notification.deviceName }} <br>
+              <b>Variable: </b>{{ notification.variableFullName }}  <br>
+               <b>Condition: </b>{{ notification.condition }} <br>
+               <b>Limit: </b>{{ notification.value}} <br>
+               <b>Value: </b>{{ notification.payload.value}} <br>
+            </div>
+          </a>
         </li>
       </base-dropdown>
+      <!-- profile, setting and logout -->
       <base-dropdown
         tag="li"
         :menu-on-right="!$rtl.isRTL"
@@ -89,9 +81,7 @@
         title-classes="nav-link"
         menu-classes="dropdown-navbar"
       >
-        <template
-          slot="title"
-        >
+        <template slot="title">
           <div class="photo"><img src="img/mike.jpg" /></div>
           <b class="caret d-none d-lg-block d-xl-block"></b>
           <p class="d-lg-none">Log out</p>
@@ -111,40 +101,48 @@
   </base-nav>
 </template>
 <script>
-import { CollapseTransition } from 'vue2-transitions';
-import { BaseNav, Modal } from '@/components';
+import { CollapseTransition } from "vue2-transitions";
+import { BaseNav, Modal } from "@/components";
+import { Select, Option } from "element-ui";
 
 export default {
   components: {
     CollapseTransition,
     BaseNav,
-    Modal
+    Modal,
+    [Select.name]: Select,
+    [Option.name]: Option,
   },
   computed: {
     routeName() {
       const { path } = this.$route;
-      let parts = path.split('/')
-      if(parts == ','){
-        return  'Dashboard';
+      let parts = path.split("/");
+      if (parts == ",") {
+        return "Dashboard";
       }
-      return parts.map(p => this.capitalizeFirstLetter(p)).join(' ');
+      return parts.map((p) => this.capitalizeFirstLetter(p)).join(" ");
     },
     isRTL() {
       return this.$rtl.isRTL;
-    }
+    },
   },
   data() {
     return {
       activeNotifications: false,
       showMenu: false,
       searchModalVisible: false,
-      searchQuery: ''
+      searchQuery: "",
+      selectedDevice: null,
     };
+  },
+  mounted() {
+    this.$nuxt.$on("selectedDeviceIndex", this.updateSelectedDeviceIndex);
+
   },
   methods: {
     capitalizeFirstLetter(string) {
-      if (!string || typeof string !== 'string') {
-        return ''
+      if (!string || typeof string !== "string") {
+        return "";
       }
       return string.charAt(0).toUpperCase() + string.slice(1);
     },
@@ -156,8 +154,87 @@ export default {
     },
     toggleMenu() {
       this.showMenu = !this.showMenu;
+    },
+    async selectDevice() {
+      const device = this.$store.state.devices[this.selectedDevice];
+      try {
+        const axiosHeader = {
+          headers: {
+            "Content-Type": "application/json",
+            token: this.$store.state.auth.token,
+          },
+        };
+        const toSend = {
+          dId: device.dId,
+        };
+        const res = await this.$axios.put("/device", toSend, axiosHeader);
+        console.log("resData Nav",res.data);
+        if (res.data.status && device.saverRule.status) {
+          this.$store.dispatch("getDevices");
+
+        }else{
+          this.$notify({
+            type: "warning",
+            icon: "tim-icons icon-bell-55",
+            message: "Device is not connected",
+          });
+        }
+      } catch (error) {
+        this.$notify({
+          type: "danger",
+          icon: "tim-icons icon-alert-circle-exc",
+          message: "Error selecting device",
+        });
+      }
+    },
+    updateSelectedDeviceIndex(index) {
+      this.selectedDevice = index;
+    },
+    //UNIX A FECHA
+    unixToDate(ms) {
+      var d = new Date(parseInt(ms)),
+        yyyy = d.getFullYear(),
+        mm = ("0" + (d.getMonth() + 1)).slice(-2), // Months are zero based. Add leading 0.
+        dd = ("0" + d.getDate()).slice(-2), // Add leading 0.
+        hh = d.getHours(),
+        h = hh,
+        min = ("0" + d.getMinutes()).slice(-2), // Add leading 0.
+        ampm = "AM",
+        time;
+      if (hh > 12) {
+        h = hh - 12;
+        ampm = "PM";
+      } else if (hh === 12) {
+        h = 12;
+        ampm = "PM";
+      } else if (hh == 0) {
+        h = 12;
+      }
+      // ie: 2013-02-18, 8:35 AM
+      time = dd + "/" + mm + "/" + yyyy + ", " + h + ":" + min + " " + ampm;
+      return time;
+    },
+    notificationReaded(notifId) {
+      const axiosHeaders = {
+        headers: {
+          "Content-Type": "application/json",
+          token: this.$store.state.auth.token
+        }
+      };
+      const toSend = {
+        notifId: notifId
+      };
+      this.$axios
+        .put("/notifications", toSend, axiosHeaders)
+        .then(res => {
+          this.$store.dispatch("getNotifications");
+        })
+        .catch(e => {
+          console.log(e);
+          return;
+        });
     }
-  }
+  },
 };
 </script>
 <style scoped>

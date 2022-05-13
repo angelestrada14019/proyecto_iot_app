@@ -11,8 +11,8 @@
         :class="[config.icon, getIconColorClass()]"
         style="font-size: 30px"
       ></i>
-      <base-button @click="sendValue()" :type="config.class" label="Add" class="mb-3 pull-right" size="lg"
-        >Add</base-button
+      <base-button @click="sendValue()" :type="config.class" :label="config.text" class="mb-3 pull-right" size="lg"
+        >{{config.text}}</base-button
       >
     </card>
   </div>
@@ -40,7 +40,7 @@ export default {
         }
       }
       console.log("sendValue",toSend);
-      this.$nuxt.$emit('mqtt-sender', { value: !this.value });
+      this.$nuxt.$emit('mqtt-sender', toSend);
     },
     getIconColorClass() {
       if (!this.sending) {

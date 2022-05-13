@@ -21,6 +21,11 @@ app.use(cors()); //permitir peticiones desde otros dominios
 //routes
 app.use('/v1', require('./routes/devices.js'));
 app.use('/v1', require('./routes/users.js'));
+app.use('/v1', require('./routes/templates.js'));
+app.use('/v1', require('./routes/webhooks.js'));
+app.use('/v1', require('./routes/emqxapi.js'));
+app.use('/v1', require('./routes/alarms.js'));
+app.use('/v1', require('./routes/dataproviders.js'));
 
 
 module.exports = app; //exportar el servidor y poder usarlo en otros archivos

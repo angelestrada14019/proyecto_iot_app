@@ -11,50 +11,44 @@
             <div class="form-group">
               <base-input
                 label="Device Name"
-                type="test"
-                placeholder="Home."
+                type="text"
+                placeholder="Home, Office, etc."
+                v-model="newDevice.name"
               ></base-input>
             </div>
           </div>
           <div class="col-4">
             <base-input
               label="Device Id"
-              type="test"
+              type="text"
               placeholder="777"
+              v-model="newDevice.dId"
             ></base-input>
           </div>
           <div class="col-4">
             <slot name="label">
-              <label for="template">Template</label>
+              <label for="template">Template {{selectedIndexTemplate}}</label>
             </slot>
             <el-select
-              value="Select device template"
+              v-model="selectedIndexTemplate"
               id="template"
               class="select-primary"
               placeholder="Select Template"
               style="width: 100%"
             >
               <el-option
+                v-for="(template, index) in templates"
+                :key="template._id"
+                :label="template.name"
+                :value="index"
                 class="text-dark"
-                label="Home"
-                value="home"
-              ></el-option>
-              <el-option
-                class="text-dark"
-                label="Office"
-                value="office"
-              ></el-option>
-              <el-option
-                class="text-dark"
-                label="template1"
-                value="template1"
               ></el-option>
             </el-select>
           </div>
         </div>
         <div class="row pull-right">
           <div class="col-12">
-            <base-button type="primary" label="Add" class="mb-3" size="lg"
+            <base-button @click="createNewDevice()" type="primary" label="Add" class="mb-3" size="lg"
               >Add</base-button
             >
           </div>
@@ -77,6 +71,7 @@
             </el-table-column>
             <el-table-column label="Name" prop="name"></el-table-column>
             <el-table-column label="Device Id" prop="dId"></el-table-column>
+            <el-table-column label="Password" prop="password"></el-table-column>
             <el-table-column
               label="Template"
               prop="templateName"
@@ -90,15 +85,15 @@
                   <i
                     class="fas fa-database"
                     :class="{
-                      'text-success': row.saverRule,
-                      'text-dark': !row.saverRule,
+                      'text-success': row.saverRule.status,
+                      'text-dark': !row.saverRule.status,
                     }"
                   ></i>
                 </el-tooltip>
                 <el-tooltip content="Database Save">
                   <base-switch
-                    @click="updateSaverRuleStatus($index)"
-                    :value="row.saverRule"
+                    @click="updateSaverRuleStatus(row.saverRule)"
+                    :value="row.saverRule.status"
                     type="primary"
                     on-text="On"
                     off-text="Off"
@@ -142,10 +137,87 @@ export default {
     [Select.name]: Select,
     [Option.name]: Option,
   },
+  data() {
+    return {
+      templates: [],
+      selectedIndexTemplate: null,
+      newDevice:{
+        name: "",
+        dId: "",
+        templateId: "",
+        templateName: "",
+      }
+    };
+  },
   mounted() {
-    this.$store.dispatch("getDevices");
+    //this.$store.dispatch("getDevices");
+    this.getTemplates();
   },
   methods: {
+    async getTemplates() {
+      try {
+        const axiosHeader = {
+          headers: {
+            "Content-Type": "application/json",
+            token: this.$store.state.auth.token,
+          },
+        };
+        const res = await this.$axios.get("/template", axiosHeader);
+        console.log(res.data);
+        if (res.data.status) {
+          this.templates = res.data.data;
+        }
+      } catch (error) {
+        console.log(error);
+        this.$notify({
+          type: "danger",
+          icon: "tim-icons icon-alert-circle-exc",
+          message: "Somethin went wrong with get templates",
+        });
+      }
+    },
+   async createNewDevice() {
+      if(this.newDevice.name==="" || this.newDevice.dId==="" || this.selectedIndexTemplate===null){
+        this.$notify({
+          type: "warning",
+          icon: "tim-icons icon-alert-circle-exc",
+          message: "Please enter device name or device id or choose template",
+      });
+      return;
+      }
+      try {
+        const axiosHeader = {
+          headers: {
+            "Content-Type": "application/json",
+            token: this.$store.state.auth.token,
+          },
+        };
+        this.newDevice.templateId = this.templates[this.selectedIndexTemplate]._id;
+        this.newDevice.templateName = this.templates[this.selectedIndexTemplate].name;
+        const toSend={
+          newDevice: this.newDevice
+        }
+        const res = await this.$axios.post("/device", toSend, axiosHeader);
+        if (res.data.status) {
+          this.newDevice.name="";
+          this.newDevice.dId="";
+          this.selectedIndexTemplate = null;
+          this.$notify({
+            type: "success",
+            icon: "tim-icons icon-check-2",
+            message: "Device added successfully",
+          });
+          this.$store.dispatch("getDevices");
+        }
+      } catch (error) {
+        console.log(error);
+        this.$notify({
+          type: "danger",
+          icon: "tim-icons icon-alert-circle-exc",
+          message: "Somethin went wrong with create new device, may be try again with different device id",
+        });
+      }
+    },
     deleteDevice(device) {
       const axiosHeader = {
         headers: {
@@ -178,12 +250,41 @@ export default {
           });
         });
     },
-    updateSaverRuleStatus(index) {
-      this.devices[index].saverRule = !this.devices[index].saverRule;
-    },
-  },
-  data() {
-    return {};
+    updateSaverRuleStatus(rule) {
+      let ruleCopy = JSON.parse(JSON.stringify(rule));
+      ruleCopy.status = !ruleCopy.status;
+      const toSend = {
+        rule: ruleCopy
+      };
+      const axiosHeaders = {
+        headers: {
+          token: this.$store.state.auth.token
+        }
+      };
+      this.$axios
+        .put("/saver-rule", toSend, axiosHeaders)
+        .then(res => {
+          if (res.data.status) {
+            this.$store.dispatch("getDevices");
+            this.$notify({
+              type: "success",
+              icon: "tim-icons icon-check-2",
+              message: " Device Saver Status Updated"
+            });
+          }
+
+          return;
+        })
+        .catch(e => {
+          console.log(e);
+          this.$notify({
+            type: "danger",
+            icon: "tim-icons icon-alert-circle-exc",
+            message: " Error updating saver rule status"
+          });
+          return;
+        });
+    }
   },
 };
 </script>

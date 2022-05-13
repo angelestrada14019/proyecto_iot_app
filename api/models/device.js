@@ -12,6 +12,10 @@ const deviceSchema = new Schema({
     required: [true, 'El id del dispositivo es necesario'],
     unique: true
   },
+  password:{
+    type: String,
+    required: [true, 'El password del dispositivo es necesario'],
+  },
   name:{
     type: String,
     required: [true, 'El nombre del dispositivo es necesario'],

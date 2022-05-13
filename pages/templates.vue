@@ -77,6 +77,12 @@
                 label="Chart Back Time (mins)"
                 type="number"
               ></base-input>
+              <br />
+              <base-input
+                v-model.number="ncConfig.variableSendFreq"
+                label="Variable Send Frequency (sec)"
+                type="number"
+              ></base-input>
 
               <br />
 
@@ -414,6 +420,12 @@
               ></base-input>
 
               <br />
+              <base-input
+                v-model.number="iotIndicatorConfig.variableSendFreq"
+                label="Variable Send Frequency (sec)"
+                type="number"
+              ></base-input>
+              <br />
 
               <el-select
                 v-model="iotIndicatorConfig.class"
@@ -576,7 +588,7 @@
     </div>
 
     <!-- SAVE TEMPLATE-->
-    <div class="row">
+    <div class="row" v-if="widgets.length>0">
         <card>
         <div slot="header">
           <h4 class="card-title">Save Template</h4>
@@ -610,6 +622,7 @@
               class="mb-3 pull-right"
               size="lg"
               @click="saveTemplate()"
+              :disabled="!templateName || !templateDescription"
             >
               Save Template
             </base-button>
@@ -707,13 +720,15 @@ export default {
       templateDescription: "",
 
       ncConfig: {
-        userId: "sampleuserid",
+        userId: this.$store.state.auth.user._id,
         selectedDevice: {
-          name: "Home",
-          dId: "8888",
+          name: "",
+          dId: "",
         },
         variableFullName: "temperature",
         variable: "varname",
+        variableType: "input",
+        variableSendFreq: "30",
         unit: "Watts",
         class: "success",
         column: "col-12",
@@ -724,46 +739,53 @@ export default {
         demo: true,
       },
       iotSwitchConfig: {
-        userId: "userid",
+        userId: this.$store.state.auth.user._id,
         selectedDevice: {
-          name: "Home",
-          dId: "8888",
+          name: "",
+          dId: "",
         },
         variableFullName: "Luz",
         variable: "varname",
+        variableType: "output",
         class: "danger",
         widget: "switch",
         icon: "fa-bath",
         column: "col-6",
       },
       iotButtonConfig: {
-        userId: "userid",
+        userId: this.$store.state.auth.user._id,
         selectedDevice: {
-          name: "Home",
-          dId: "8888",
+          name: "",
+          dId: "",
         },
         variableFullName: "temperature",
         text: "send",
         message: "testing123",
         variable: "varname",
+        variableType: "output",
         widget: "button",
         icon: "fa-bath",
         column: "col-6",
       },
       iotIndicatorConfig: {
-        userId: "userid",
+        userId: this.$store.state.auth.user._id,
         selectedDevice: {
-          name: "Home",
-          dId: "8888",
+          name: "",
+          dId: "",
         },
         variableFullName: "temperature",
         variable: "varname",
+        variableType: "input",
+        variableSendFreq: "30",
         class: "success",
         widget: "indicator",
         icon: "fa-bath",
         column: "col-6",
       },
     };
+  },
+  mounted() {
+    this.getTemplates();
   },
   methods: {
     addNewWidget(){
@@ -787,8 +809,100 @@ export default {
     },
     deleteWidget(index){
       this.widgets.splice(index, 1);
+
     },
-    saveTemplate(){
+    async getTemplates(){
+      try {
+        const axiosHeader = {
+        headers: {
+          "Content-Type": "application/json",
+          token: this.$store.state.auth.token,
+        }
+      };
+        const res=await this.$axios.get("/template",axiosHeader);
+        console.log(res.data);
+        if(res.data.status){
+            this.templates = res.data.data;
+
+          }
+      } catch (error) {
+        console.log(error);
+        this.$notify({
+            type: "danger",
+            icon: "tim-icons icon-alert-circle-exc",
+            message: "Somethin went wrong with get templates",
+        });
+      }
+
+    },
+    async saveTemplate(){
+      const axiosHeader = {
+        headers: {
+          "Content-Type": "application/json",
+          token: this.$store.state.auth.token,
+        }
+      };
+      const toSend={
+        template:{
+          name: this.templateName,
+          description: this.templateDescription,
+          widgets: this.widgets
+        }
+      }
+      try {
+        const response = await this.$axios.post(
+          "/template",
+          toSend,
+          axiosHeader
+        );
+        if(response.data.status){
+          this.$notify({
+            type: "success",
+            icon: "tim-icons icon-check-2",
+            message: "Template saved successfully",
+        });
+        this.getTemplates();
+        }
+      } catch (error) {
+        console.log(error);
+        this.$notify({
+            type: "danger",
+            icon: "tim-icons icon-alert-circle-exc",
+            message: "Something went wrong",
+        });
+      }
+    },
+    async deleteTemplate(template){
+      const axiosHeader = {
+        headers: {
+          "Content-Type": "application/json",
+          token: this.$store.state.auth.token,
+        },
+        params:{
+          templateId: template._id
+        }
+      };
+      try {
+        const response = await this.$axios.delete(
+          "/template",
+          axiosHeader
+        );
+        if(response.data.status){
+          this.$notify({
+            type: "success",
+            icon: "tim-icons icon-check-2",
+            message: `Template ${template.name} deleted successfully`,
+        });
+        this.getTemplates();
+        }
+      } catch (error) {
+        console.log(error);
+        this.$notify({
+            type: "danger",
+            icon: "tim-icons icon-alert-circle-exc",
+            message: "Something went wrong deleting template",
+        });
+      }
     },
     makeid(length) {
       var result = "";

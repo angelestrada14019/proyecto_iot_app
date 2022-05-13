@@ -8,7 +8,7 @@
 
             <h5 class="card-category pull-right">{{getTimeAgo((nowTime - time) / 1000)}} ago </h5>
 
-          
+
             <h5 class="card-category">{{ config.selectedDevice.name }} - {{ config.variableFullName }}</h5>
 
             <h3 class="card-title">
@@ -176,7 +176,7 @@
                     return;
                 }
 
- 
+
                 const axiosHeaders = {
                     headers: {
                         token: $nuxt.$store.state.auth.token,
@@ -186,11 +186,10 @@
 
                 this.$axios.get("/get-small-charts-data", axiosHeaders)
                     .then(res => {
-                        
+
                         this.chartOptions.series[0].data = [];
                         const data = res.data.data;
-                        console.log(res.data)
-
+                        this.value = data[data.length-1].value;
                         data.forEach(element => {
                             var aux = []
 
@@ -240,13 +239,13 @@
                     setTimeout(() => {
                         if(data.save==1){
                             this.getChartData();
-                        }  
+                        }
                     }, 1000);
                 } catch (error) {
                     console.log(error);
                 }
 
-               
+
             },
 
             getNow() {
