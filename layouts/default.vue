@@ -186,9 +186,9 @@ export default {
       });
 
       this.client.on("message", (topic, message) => {
+        try {
         console.log("Message from topic " + topic + " -> ");
         console.log(message.toString());
-        try {
           const splittedTopic = topic.split("/");
           const msgType = splittedTopic[3];
           if (msgType == "notif") {
@@ -233,6 +233,12 @@ export default {
         }
       } catch (error) {
         console.log(error);
+        if (error.response.status == 401) {
+          localStorage.clear();
+          const auth={}
+          this.$store.commit("setAuth",auth);
+          window.location.href = "/login";
+        }
       }
     },
     async getMqttCreditentialsForReconnection() {
@@ -256,6 +262,12 @@ export default {
         }
       } catch (error) {
         console.log(error);
+        if (error.response.status == 401) {
+          localStorage.clear();
+          const auth={}
+          this.$store.commit("setAuth",auth);
+          $nuxt.$router.push("/login");
+        }
       }
     }
   },

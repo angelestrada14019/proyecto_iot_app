@@ -7,7 +7,7 @@ import Device from '../models/device';
 import SaverRule from "../models/emqx_saver_rule.js";
 import Template from "../models/template.js";
 import AlarmRule from '../models/emqx_alarm_rule.js';
-
+import EmqxAuthRule from "../models/emqx_auth.js";
 // response
 const response = {
   status: false,
@@ -147,11 +147,35 @@ router.delete('/device',checkAuth, async (req, res) => {
     const {dId} = req.query;
     //deleting saver rule.
     const deleting =await deleteSaverRule(dId);
+
     if(deleting){
+      // delete all alarms
+      await deleteAllAlarmRules(dId);
+      //delete devie credentials
+      await deleteMqttDeviceCredentials(dId);
+      //deleting device
     const result=await Device.deleteOne({
       dId: dId,
       userId: userId
     });
+    const devices = await Device.find({
+      userId: userId
+    });
+    if(devices.length>=1){
+      //any selected
+      let found = false;
+      devices.forEach(device => {
+        if(device.selected){
+          found = true;
+        }
+      });
+      //no selected need to select first
+      if(!found){
+        await Device.updateMany({userId: userId},{selected: false});
+        await Device.updateOne({userId: userId,dId: devices[0].dId},{selected: true});
+
+      }
+    }
 
     response.status = true;
     response.message = "Device deleted";
@@ -189,6 +213,48 @@ async function getAlarmRules(userId) {
       return "error";
   }
 
+}
+
+//delet all alarmas
+async function deleteAllAlarmRules(userId, dId) {
+  try {
+    const rules = await AlarmRule.find({ userId: userId, dId: dId });
+
+    if (rules.length > 0) {
+      asyncForEach(rules, async rule => {
+        const url = "http://localhost:8085/api/v4/rules/" + rule.emqxRuleId;
+        const res = await axios.delete(url, auth);
+      });
+
+      await AlarmRule.deleteMany({ userId: userId, dId: dId });
+    }
+
+    return true;
+  } catch (error) {
+    console.log(error);
+    return "error";
+  }
+}
+
+// We can solve this by creating our own asyncForEach() method:
+// thanks to Sebastien Chopin - Nuxt Creator :)
+// https://codeburst.io/javascript-async-await-with-foreach-b6ba62bbf404
+async function asyncForEach(array, callback) {
+  for (let index = 0; index < array.length; index++) {
+    await callback(array[index], index, array);
+  }
+}
+
+//delete ALL emqx device  auth rules
+async function deleteMqttDeviceCredentials(dId) {
+  try {
+    await EmqxAuthRule.deleteMany({ dId: dId, type: "device" });
+
+    return true;
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
 }
 
 const selectDevice = async  (userId,dId) => {

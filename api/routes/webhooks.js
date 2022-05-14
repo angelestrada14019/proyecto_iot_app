@@ -10,6 +10,7 @@ import Device from "../models/device.js";
 import Notification from "../models/notification.js";
 import AlarmRule from "../models/emqx_alarm_rule.js";
 import Template from "../models/template.js";
+import EmqxAuthRule from "../models/emqx_auth.js";
 
 let client;
 
@@ -150,7 +151,7 @@ router.post("/getdevicecredentials", async (req, res) => {
   const userId = device.userId;
   let credentials = await getDeviceMqttCredentials(dId, userId);
   let template = await Template.findOne({ _id: device.templateId });
-  console.log(template);
+  console.log(credentials);
   var variables = [];
 
   template.widgets.forEach(widget => {
@@ -172,10 +173,10 @@ router.post("/getdevicecredentials", async (req, res) => {
     variables: variables
   };
   res.json(toSend);
-  // setTimeout(() => {
-  //   getDeviceMqttCredentials(dId, userId);
-  //   console.log("Device Credentials Updated");
-  // }, 20000);
+  setTimeout(() => {
+    getDeviceMqttCredentials(dId, userId);
+    console.log("Device Credentials Updated");
+  }, 20000);
 
   } catch (error) {
     console.log("ERROR GETTING DEVICE CREDENTIALS");
@@ -285,6 +286,7 @@ async function getDeviceMqttCredentials(dId, userId) {
     if (rule.length == 0) {
       const newRule = {
         userId: userId,
+        dId: dId,
         username: makeid(10),
         password: makeid(10),
         publish: [userId + "/" + dId + "/+/sdata"],
@@ -335,6 +337,16 @@ async function getDeviceMqttCredentials(dId, userId) {
   }
 }
 
+function makeid(length) {
+  var result = "";
+  var characters =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  var charactersLength = characters.length;
+  for (var i = 0; i < length; i++) {
+    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+  }
+  return result;
+}
 
 setTimeout(() => {
   startMqttClient();

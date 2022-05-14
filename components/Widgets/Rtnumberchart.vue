@@ -113,7 +113,7 @@
         watch:  {
             config: {
                 immediate: true,
-                deep: true,
+                deep: true, //niveles de anidacion
                 handler() {
                     setTimeout(() => {
                         this.value = 0;

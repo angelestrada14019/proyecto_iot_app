@@ -862,6 +862,7 @@ export default {
             message: "Template saved successfully",
         });
         this.getTemplates();
+        this.widgets=[];
         }
       } catch (error) {
         console.log(error);
@@ -887,6 +888,14 @@ export default {
           "/template",
           axiosHeader
         );
+        if(response.data.status==false && response.data.message=="fail"){
+          this.$notify({
+            type: "danger",
+            icon: "tim-icons icon-alert-circle-exc",
+            message: "Can't delete template, because it has devices",
+        });
+        return;
+        }
         if(response.data.status){
           this.$notify({
             type: "success",
@@ -900,7 +909,7 @@ export default {
         this.$notify({
             type: "danger",
             icon: "tim-icons icon-alert-circle-exc",
-            message: "Something went wrong deleting template",
+            message: `Something went wrong with template ${template.name}`,
         });
       }
     },

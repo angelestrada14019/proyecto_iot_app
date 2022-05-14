@@ -16,16 +16,32 @@ export default {
   data(){
     return {
       value:false,
+      topic:"",
 
     }
   },
+  watch:  {
+            config: {
+                immediate: true,
+                deep: true, //niveles de anidacion
+                handler() {
+                    setTimeout(() => {
+                        this.value = false;
+
+                        this.$nuxt.$off(this.topic);
+
+                       this.topic=this.config.userId + '/' + this.config.selectedDevice.dId + '/' + this.config.variable + '/sdata';
+                        this.$nuxt.$on(this.topic, this.processReceivedData);
+                    }, 300);
+                }
+            }
+        },
   mounted(){
-    const topic=this.config.userId + '/' + this.config.selectedDevice.dId + '/' + this.config.variable + '/sdata';
-    this.$nuxt.$on(topic, this.processReceivedData);
+    this.topic=this.config.userId + '/' + this.config.selectedDevice.dId + '/' + this.config.variable + '/sdata';
+    this.$nuxt.$on(this.topic, this.processReceivedData);
   },
   beforeDestroy(){
-    const topic=this.config.userId + '/' + this.config.selectedDevice.dId + '/' + this.config.variable + '/sdata';
-    this.$nuxt.$off(topic);
+    this.$nuxt.$off(this.topic);
   },
   methods:{
     getIconColorClass(){
@@ -36,8 +52,13 @@ export default {
       }
     },
     processReceivedData(data){
-      console.log("processReceivedData",data);
+      try {
+        console.log("processReceivedData",data);
         this.value = data.value;
+      } catch (error) {
+        console.log("processReceivedData",error);
+      }
+
     }
   }
 }
