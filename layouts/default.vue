@@ -187,8 +187,6 @@ export default {
 
       this.client.on("message", (topic, message) => {
         try {
-        console.log("Message from topic " + topic + " -> ");
-        console.log(message.toString());
           const splittedTopic = topic.split("/");
           const msgType = splittedTopic[3];
           if (msgType == "notif") {
@@ -210,13 +208,15 @@ export default {
 
       $nuxt.$on('mqtt-sender',(toSend)=>{
         this.client.publish(toSend.topic, JSON.stringify(toSend.msg));
-      })
+        console.log("Published to " + JSON.stringify(toSend));
+      });
     },
     async getMqttCreditentials() {
       try {
         const axiosHeader = {
           headers: {
             token: this.$store.state.auth.token,
+
           },
         };
         const credentials = await this.$axios.post("/getmqttcredentials", null ,axiosHeader);

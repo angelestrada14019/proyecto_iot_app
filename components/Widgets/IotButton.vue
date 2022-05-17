@@ -39,7 +39,6 @@ export default {
           value: this.config.message
         }
       }
-      console.log("sendValue",toSend);
       this.$nuxt.$emit('mqtt-sender', toSend);
     },
     getIconColorClass() {

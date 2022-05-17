@@ -53,7 +53,6 @@ export default {
     },
     processReceivedData(data){
       try {
-        console.log("processReceivedData",data);
         this.value = data.value;
       } catch (error) {
         console.log("processReceivedData",error);

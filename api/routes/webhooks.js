@@ -42,12 +42,10 @@ router.post("/saver-webhook", async (req, res) => {
         value: data.payload.value,
         time: Date.now(),
       });
-      console.log("Data created");
     }
     response.status = true;
     response.message = "Data created";
     res.json(response);
-    console.log("Data created".green, response);
   } catch (error) {
     response.message = "Error creating data";
     res.status(500).json(response);
