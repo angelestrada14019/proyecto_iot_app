@@ -58,6 +58,7 @@ const mongoOptions = {
 };
 mongoose.connect(mongoURL, mongoOptions).then(() => {
     console.log('MongoDB connected'.green);
+    global.check_mqtt_superuser();
 }).catch(err => {
     console.log('MongoDB connection error index line 53'.red);
     console.log(err);
