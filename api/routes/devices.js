@@ -22,8 +22,8 @@ const response = {
 const auth = {
   auth: {
     username: "admin",
-    password: "angel12343"
-  }
+    password: process.env.EMQX_MANAGEMENT__DEFAULT_APPLICATION__SECRET
+  },
 };
 
 router.get('/device',checkAuth ,async (req, res) => {

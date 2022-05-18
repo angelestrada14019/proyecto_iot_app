@@ -99,8 +99,8 @@ export default {
       sidebarBackground: "primary", //vue|blue|orange|green|red|primary
       client: null,
       options:{
-        host: "localhost",
-        port: 8083,
+        host: process.env.mqtt_host,
+        port: process.env.mqtt_port,
         endpoint: "/mqtt",
         clean: true,
         connectTimeout: 5000,
@@ -145,7 +145,7 @@ export default {
       const notifSubscribeTopic =
         this.$store.state.auth.user._id + "/+/+/notif";
       const connectUrl =
-        "ws://" + this.options.host + ":" + this.options.port + this.options.endpoint;
+        process.env.mqtt_prefix + this.options.host + ":" + this.options.port + this.options.endpoint;
 
 
       try {

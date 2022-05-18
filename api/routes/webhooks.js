@@ -23,7 +23,7 @@ const response = {
 router.post("/saver-webhook", async (req, res) => {
   try {
     const token = req.headers.token;
-    if (token !== "123456789") {
+    if (token !== process.env.EMQX_API_TOKEN) {
       response.message = "Invalid token";
       res.status(400).json(response);
       return;
@@ -55,7 +55,7 @@ router.post("/saver-webhook", async (req, res) => {
 router.post("/alarm-webhook", async (req, res) => {
   try {
     const token = req.headers.token;
-    if (token != "123456789") {
+    if (token != process.env.EMQX_API_TOKEN) {
       response.message = "Invalid token";
       res.status(400).json(response);
       return;
@@ -217,11 +217,11 @@ async function updateAlarmCounter(emqxRuleId) {
 function startMqttClient() {
   const options = {
     port: 1883,
-    host: "localhost",
+    host: process.env.EMQX_NODE_HOST,
     clientId:
       "webhook_superuser" + Math.round(Math.random() * (0 - 10000) * -1),
-    username: "superuser",
-    password: "superuser",
+    username: process.env.EMQX_NODE_SUPERUSER_USER,
+    password: process.env.EMQX_NODE_SUPERUSER_PASSWORD,
     keepalive: 60,
     reconnectPeriod: 5000,
     protocolId: "MQIsdp",
@@ -230,7 +230,7 @@ function startMqttClient() {
     encoding: "utf8"
   };
 
-  client = mqtt.connect("mqtt://" + "localhost", options);
+  client = mqtt.connect("mqtt://" + process.env.EMQX_NODE_HOST, options);
 
   client.on("connect", function() {
     console.log("MQTT CONNECTION -> SUCCESS;".green);

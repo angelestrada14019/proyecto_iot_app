@@ -217,7 +217,6 @@ async function getWebUserMqttCredentials(userId) {
 async function getWebUserMqttCredentialsForReconnection(userId) {
   try {
     let rule = await EmqxAuthRule.find({ type: "user", userId: userId });
-    console.log(rule);
     if (rule.length == 1) {
       const toReturn = {
         username: rule[0].username,

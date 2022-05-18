@@ -10,6 +10,9 @@ const mongoose = require('mongoose');
 // colors para imprimir en consola con colores
 const colors = require('colors');
 
+//require('dotenv').config({ path: 'variables.env' });
+require('dotenv').config();
+
 //instances
 const app = express();
 // express config
@@ -31,8 +34,8 @@ app.use('/v1', require('./routes/dataproviders.js'));
 module.exports = app; //exportar el servidor y poder usarlo en otros archivos
 
 //listener
-app.listen(3001, () => {
-    console.log('Server running on port 3001');
+app.listen(process.env.API_PORT, () => {
+    console.log('Server running on port '+process.env.API_PORT);
 });
 
 //endpoint test req: todos los datos entrantes, res: respuesta a la peticion del cliente
@@ -41,11 +44,11 @@ app.listen(3001, () => {
 // });
 
 //mongo connection
-const mongoUserName = 'root';
-const mongoPassword = '02102910';
-const mongoHost = 'localhost';
-const mongoPort = "27018";
-const mongoDBName = 'api-iot';
+const mongoUserName = process.env.MONGO_USERNAME;
+const mongoPassword = process.env.MONGO_PASSWORD;
+const mongoHost = process.env.MONGO_HOST;
+const mongoPort = process.env.MONGO_PORT;
+const mongoDBName = process.env.MONGO_DATABASE;
 const mongoURL = `mongodb://${mongoUserName}:${mongoPassword}@${mongoHost}:${mongoPort}/${mongoDBName}`;
 const mongoOptions = {
     useNewUrlParser: true,

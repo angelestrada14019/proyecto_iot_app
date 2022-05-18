@@ -62,7 +62,19 @@ export default {
   // Axios module configuration: https://go.nuxtjs.dev/config-axios
   axios: {
     // Workaround to avoid enforcing hard-coded localhost:3000: https://github.com/nuxt-community/axios-module/issues/308
-    baseURL: 'http://localhost:3001/v1',
+    baseURL: process.env.AXIOS_BASE_URL,
+  },
+  env:{
+    mqtt_prefix: process.env.MQTT_PREFIX,
+    mqtt_host: process.env.MQTT_HOST,
+    mqtt_port: process.env.MQTT_PORT,
+  },
+  server:{
+    port:3000,
+    host:'0.0.0.0'
+  },
+  serverMiddleware:{
+    '/api':'~/api'
   },
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
